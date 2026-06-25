@@ -10,10 +10,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import anthropic
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TEMPLATES_FILE = Path(__file__).parent / "prompt-templates.md"
 RUNS_LOG = Path(__file__).parent / "runs.jsonl"
-MODEL = "claude-opus-4-8"
+MODEL = "claude-haiku-4-5"
 
 
 def parse_templates(path: Path) -> dict[str, str]:
@@ -69,7 +72,7 @@ def fill_template(template: str, values: dict[str, str]) -> str:
 
 
 def call_claude(prompt: str) -> str:
-    client = anthropic.Anthropic()
+    client = anthropic.Anthropic(base_url=os.getenv("AZURE_BASE_URL"), api_key=os.getenv("AZURE_API_KEY"))
     response = client.messages.create(
         model=MODEL,
         max_tokens=2048,
@@ -123,8 +126,8 @@ def main() -> None:
         print(f"Template file not found: {TEMPLATES_FILE}")
         return
 
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("Set ANTHROPIC_API_KEY before running.")
+    if not os.environ.get("AZURE_API_KEY"):
+        print("Set AZURE_API_KEY before running.")
         return
 
     templates = parse_templates(TEMPLATES_FILE)
